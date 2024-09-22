@@ -1,11 +1,13 @@
 import { initializeApp } from 'firebase/app';
-import { 
-  getAuth, 
-  signInWithRedirect, 
-  signInWithPopup, 
+import {
+  getAuth,
+  signInWithRedirect,
+  signInWithPopup,
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
-} from 'firebase/auth';
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+
 import {
   getFirestore,
   doc,
@@ -25,6 +27,7 @@ const firebaseConfig = {
 const firebaseApp = initializeApp(firebaseConfig);
 
 const googleProvider = new GoogleAuthProvider();
+
 googleProvider.setCustomParameters({
   prompt: "select_account",
 });
@@ -40,6 +43,7 @@ export const createUserDocumentFromAuth = async (userAuth, additionalInformation
   if (!userAuth) return;
   
   const userDocRef = doc(db, 'users', userAuth.uid);
+
   const userSnapshot = await getDoc(userDocRef);
 
   // 유저데이터 존재 x
@@ -67,3 +71,9 @@ export const createAuthUserWithEmailAndPassword = async (email, password) => {
   
   return await createUserWithEmailAndPassword(auth, email, password);
 }
+
+export const signInAuthUserWithEmailAndPassword = async (email, password) => {
+  if (!email || !password) return;
+  
+  return await signInWithEmailAndPassword(auth, email, password);
+};
