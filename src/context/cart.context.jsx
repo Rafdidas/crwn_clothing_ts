@@ -1,4 +1,4 @@
-import { createContext, useState } from "react";
+import { createContext, useState, useEffect } from "react";
 
 // 상품이 이미 장바구니에 있는지 확인하고, 있으면 수량을 늘리고 없으면 새로 추가
 export const addCartItem = (cartItems, productToAdd) => {
@@ -21,17 +21,31 @@ export const CartContext = createContext({
     setIsCartOpen: () => {}, // 장바구니 열기/닫기 상태를 설정하는 함수
     cartItems: [],         // 장바구니에 담긴 상품 목록
     addItemToCart: () => {}, // 장바구니에 상품을 추가하는 함수
+    removeItemFromCart: () => {}, // 주문서에서 상품을 제거하는 함수
+    cartCount: 0,
 });
 
 export const CartProvider = ({children}) => {
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [cartItems, setCartItems] = useState([]);
+    const [cartCount, setCartCount] = useState(0);
+
+    useEffect(() => {
+        const newCartCount = cartItems.reduce((total, cartItem) => total + cartItem.quantity ,0);
+        setCartCount(newCartCount);
+    }, [cartItems])
     
     const addItemToCart = (productToAdd) => {
         setCartItems(addCartItem(cartItems, productToAdd)); // 상품 추가
     }
 
-    const value = { isCartOpen, setIsCartOpen, cartItems, addItemToCart }; // 전역 상태 값
+    const value = {
+      isCartOpen,
+      setIsCartOpen,
+      cartItems,
+      addItemToCart,
+      cartCount,
+    }; // 전역 상태 값
     return (
         <CartContext.Provider value={value}>{children}</CartContext.Provider>
     );
