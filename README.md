@@ -29,7 +29,73 @@
    ### 카트 모달
    - 퀵카트 기능을 추가하여 SHOP 페이지에서 'ADD TO CART' 클릭 시 카트에 담긴 상품과 담긴 갯수를 확인가능
    ### 결제 페이지
-   - 체크아웃 페이지 작업 중
+   - 카트에 담긴 상품들이 cart.context로 전달 되고, 수량 조절 및 총합계 계산
+   ### 리스트 페이지 (shop)
+   - 카테고리 별 예시 상품이 4개 노출, 카테고리 클릭 시 해당 리스트페이지로 이동
+
+## 5. Shop 페이지
+전역적으로 제품 정보를 관리할 수 있는 컨텍스트를 생성
+firebase.util 의 getCategoriesAndDocuments 를 사용
+```
+export const CategoriesContext = createContext({
+    categoriesMap: {},
+});
+
+export const CategoriesProvider = ({children}) => {
+    const [categoriesMap, setCategoriesMap] = useState({});
+    useEffect(() => {
+        const getCategoriesMap = async () => {
+            const categoryMap = await getCategoriesAndDocuments();
+            console.log(categoryMap);
+            setCategoriesMap(categoryMap)
+        }
+
+        getCategoriesMap();
+    }, []);
+    const value = { categoriesMap };
+    return <CategoriesContext.Provider value={value} >{children}</CategoriesContext.Provider>;
+}
+```
+CategoriesPreview 로 전달
+```
+const CategoriesPreview = () => {
+  const { categoriesMap } = useContext(CategoriesContext);
+
+  return (
+    <Fragment>
+      {Object.keys(categoriesMap).map((title) => {
+        const products = categoriesMap[title];
+        return (
+          <CategoryPreview key={title} title={title} products={products} />
+        );
+      })}
+    </Fragment>
+  );
+};
+```
+CategoryPreview 에서 예시 상품을 4가지 표시 중
+```
+const CategoryPreview = ({ title, products }) => {
+    return (
+        <div className='category-preview-container'>
+            <h2>
+                <span className='title'>{title.toUpperCase()}</span>
+            </h2>
+            <div className='preview'>
+                {
+                    products
+                        .filter((_, idx) => idx < 4)
+                        .map((product) => {
+                            return <ProductCard key={product.id} product={product} />;
+                        })
+
+                }
+            </div>
+        </div>
+    );
+}
+```
+Shop 컴포넌트에서 분류 진행 중
 
 ## 5. Context 개념 다지기
 - context를 이용하면 단계마다 일일이 props를 넘겨주지 않고도 컴포넌트 트리 전체에 데이터를 제공
