@@ -69,11 +69,11 @@ export const CartProvider = ({children}) => {
     }
 
     const removeItemToCart = (cartItemToRemove) => {
-      setCartItems(removeCartItem(cartItems, cartItemToRemove)); 
+      setCartItems(removeCartItem(cartItems, cartItemToRemove)); // 상품 감소, 제거
     };
 
     const clearItemFromCart = (cartItemToClear) => {
-      setCartItems(clearCartItem(cartItems, cartItemToClear));
+      setCartItems(clearCartItem(cartItems, cartItemToClear)); // 상품 제거
     };
 
     const value = {
