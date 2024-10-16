@@ -97,7 +97,7 @@ const CategoryPreview = ({ title, products }) => {
 ```
 Shop 컴포넌트에서 분류 진행 중
 
-## 5. Context 개념 다지기
+## 6. Context 개념 다지기
 - context를 이용하면 단계마다 일일이 props를 넘겨주지 않고도 컴포넌트 트리 전체에 데이터를 제공
 - context는 React 컴포넌트 트리 안에서 전역적(global)이라고 볼 수 있는 데이터를 공유할 수 있도록 고안된 방법
 - 그러한 데이터로는 현재 로그인한 유저, 카트에 담긴 상품을 쓸 수 있으므로 쇼핑몰에 사용
@@ -181,7 +181,7 @@ export const UserProvider = ({ children }) => {
 ```
 개념은 이해 하였지만 구성에 있어서 난항
 
-## 6. firebase 구성
+## 7. firebase 구성
 ```
 export const auth = getAuth(); // Firebase 인증 객체 생성
 export const signInWhithGooglePopup = () => signInWithPopup(auth, googleProvider); // 팝업
