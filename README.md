@@ -56,6 +56,7 @@ export const CategoriesProvider = ({children}) => {
     return <CategoriesContext.Provider value={value} >{children}</CategoriesContext.Provider>;
 }
 ```
+### 5.1 카테고리 별 미리보기 페이지
 CategoriesPreview 로 전달
 ```
 const CategoriesPreview = () => {
@@ -95,7 +96,36 @@ const CategoryPreview = ({ title, products }) => {
     );
 }
 ```
-Shop 컴포넌트에서 분류 진행 중
+### 5.2 카테고리 별 리스트 페이지
+Shop 컴포넌트에서 Route로 분리
+```
+<Routes>
+  <Route index element={ <CategoriesPreview /> } />
+  <Route path=':category' element={ <Category /> } />
+</Routes>
+```
+UseParams 를 사용하여 category명을 전달하여 해당 카테고리 노출
+```
+const { category } = useParams();
+    const { categoriesMap } = useContext(CategoriesContext);
+    const [products, setProducts] = useState(categoriesMap[category]);
+
+    useEffect(() => {
+        setProducts(categoriesMap[category]);
+    }, [category, categoriesMap]);
+
+    return (
+      <Fragment>
+        <h2 className="category-title">{category.toUpperCase()}</h2>
+        <div className="category-container">
+          {products &&
+            products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+        </div>
+      </Fragment>
+    );
+```
 
 ## 6. Context 개념 다지기
 - context를 이용하면 단계마다 일일이 props를 넘겨주지 않고도 컴포넌트 트리 전체에 데이터를 제공
