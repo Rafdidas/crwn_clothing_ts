@@ -103,13 +103,13 @@ Shop 컴포넌트에서 Route로 분리
   <Route path=':category' element={ <Category /> } />
 </Routes>
 ```
-UseParams 를 사용하여 category명을 전달하여 해당 카테고리 노출
-Category 컴포넌트는 useParams() 훅을 사용하여 현재 경로에서 :category 파라미터를 가져옴
-useContext()를 통해 CategoriesContext로부터 categoriesMap을 불러온 후,
-setProducts(categoriesMap[category])로 categoriesMap에서 해당하는 카테고리의 제품 목록을 가져와 상태로 설정
-useEffect는 category와 categoriesMap이 변경될 때마다 실행됩니다.
-category가 변경될 때마다 (즉, 사용자가 다른 카테고리로 이동할 때), 새로운 카테고리의 제품 목록을 다시 설정
-그 후, 상태에 저장된 products를 이용해 ProductCard 컴포넌트를 렌더링
+-UseParams 를 사용하여 category명을 전달하여 해당 카테고리 노출
+-Category 컴포넌트는 useParams() 훅을 사용하여 현재 경로에서 :category 파라미터를 가져옴
+-useContext()를 통해 CategoriesContext로부터 categoriesMap을 불러온 후,
+-setProducts(categoriesMap[category])로 categoriesMap에서 해당하는 카테고리의 제품 목록을 가져와 상태로 설정
+-useEffect는 category와 categoriesMap이 변경될 때마다 실행됩니다.
+-category가 변경될 때마다 (즉, 사용자가 다른 카테고리로 이동할 때), 새로운 카테고리의 제품 목록을 다시 설정
+-그 후, 상태에 저장된 products를 이용해 ProductCard 컴포넌트를 렌더링
 ```
 const { category } = useParams();
     const { categoriesMap } = useContext(CategoriesContext);
