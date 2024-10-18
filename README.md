@@ -34,8 +34,8 @@
    - 카테고리 별 예시 상품이 4개 노출, 카테고리 클릭 시 해당 리스트페이지로 이동
 
 ## 5. Shop 페이지
-전역적으로 제품 정보를 관리할 수 있는 컨텍스트를 생성
-firebase.util 의 getCategoriesAndDocuments 를 사용
+- 전역적으로 제품 정보를 관리할 수 있는 컨텍스트를 생성
+- firebase.util 의 getCategoriesAndDocuments 를 사용
 ```
 export const CategoriesContext = createContext({
     categoriesMap: {},
@@ -56,7 +56,8 @@ export const CategoriesProvider = ({children}) => {
     return <CategoriesContext.Provider value={value} >{children}</CategoriesContext.Provider>;
 }
 ```
-CategoriesPreview 로 전달
+### 5.1 카테고리 별 미리보기 페이지
+- CategoriesPreview 로 전달
 ```
 const CategoriesPreview = () => {
   const { categoriesMap } = useContext(CategoriesContext);
@@ -73,29 +74,65 @@ const CategoriesPreview = () => {
   );
 };
 ```
-CategoryPreview 에서 예시 상품을 4가지 표시 중
+- CategoryPreview 에서 예시 상품을 4가지 표시 중
 ```
 const CategoryPreview = ({ title, products }) => {
     return (
-        <div className='category-preview-container'>
-            <h2>
-                <span className='title'>{title.toUpperCase()}</span>
-            </h2>
-            <div className='preview'>
-                {
-                    products
-                        .filter((_, idx) => idx < 4)
-                        .map((product) => {
-                            return <ProductCard key={product.id} product={product} />;
-                        })
-
-                }
-            </div>
+      <div className="category-preview-container">
+        <h2>
+          <Link className="title" to={title}>
+            {title.toUpperCase()}
+          </Link>
+        </h2>
+        <div className="preview">
+          {products
+            .filter((_, idx) => idx < 4)
+            .map((product) => {
+              return <ProductCard key={product.id} product={product} />;
+            })}
         </div>
+      </div>
     );
 }
 ```
-Shop 컴포넌트에서 분류 진행 중
+### 5.2 카테고리 별 리스트 페이지
+- Shop 컴포넌트에서 Route로 분리
+```
+<Routes>
+  <Route index element={ <CategoriesPreview /> } />
+  <Route path=':category' element={ <Category /> } />
+</Routes>
+```
+
+- UseParams 를 사용하여 category명을 전달하여 해당 카테고리 노출</br>
+- Category 컴포넌트는 useParams() 훅을 사용하여 현재 경로에서 :category 파라미터를 가져옴</br>
+- useContext()를 통해 CategoriesContext로부터 categoriesMap을 불러온 후,</br>
+- setProducts(categoriesMap[category])로 categoriesMap에서 해당하는 카테고리의 제품 목록을 가져와 상태로 설정</br>
+- useEffect는 category와 categoriesMap이 변경될 때마다 실행</br>
+- category가 변경될 때마다 (즉, 사용자가 다른 카테고리로 이동할 때), 새로운 카테고리의 제품 목록을 다시 설정</br>
+- 그 후, 상태에 저장된 products를 이용해 ProductCard 컴포넌트를 렌더링
+
+```
+const { category } = useParams();
+    const { categoriesMap } = useContext(CategoriesContext);
+    const [products, setProducts] = useState(categoriesMap[category]);
+
+    useEffect(() => {
+        setProducts(categoriesMap[category]);
+    }, [category, categoriesMap]);
+
+    return (
+      <Fragment>
+        <h2 className="category-title">{category.toUpperCase()}</h2>
+        <div className="category-container">
+          {products &&
+            products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+        </div>
+      </Fragment>
+    );
+```
 
 ## 6. Context 개념 다지기
 - context를 이용하면 단계마다 일일이 props를 넘겨주지 않고도 컴포넌트 트리 전체에 데이터를 제공
@@ -190,7 +227,7 @@ export const signInWhithGoogleRedirect = () =>
 
 export const db = getFirestore(); // Firestore 데이터베이스 객체를 초기화하여 데이터베이스와 상호작용
 ```
-firebase에 카테고리 추가
+- firebase에 카테고리 추가
 ```
 export const addCollectionAndDocuments = async (collectionKey, objectsToAdd) => {
   const collectionRef = collection(db, collectionKey); // Firestore에서 특정 컬렉션을 참조
@@ -204,7 +241,7 @@ export const addCollectionAndDocuments = async (collectionKey, objectsToAdd) => 
   console.log("done");
 };
 ```
-데이터를 불러와 페이지에서 사용
+- 데이터를 불러와 페이지에서 사용
 ```
 export const getCategoriesAndDocuments = async () => {
   const collectionRef = collection(db, "categories"); // 'categories'라는 컬렉션을 참조
@@ -220,7 +257,7 @@ export const getCategoriesAndDocuments = async () => {
   return categoryMap; // 최종적으로 categories 데이터를 반환
 };
 ```
-유저 인증 부분
+- 유저 인증 부분
 ```
 // Firebase 인증을 통해 로그인한 유저의 정보를 Firestore 데이터베이스에 저장
 export const createUserDocumentFromAuth = async (userAuth, additionalInformation = {}) => {
