@@ -1,5 +1,5 @@
 # CRWN CLOTHING
-#### 쇼핑몰 사이트 작업 중
+#### https://crwn-shop-clothing.netlify.app/
 
 ## 1. 소개 및 참여 인원
 - 쇼핑몰을 구성하고, 로그인, 장바구니 추가, 구매기능 구현 예정
