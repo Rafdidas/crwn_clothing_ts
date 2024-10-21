@@ -1,5 +1,6 @@
 # CRWN CLOTHING
 #### https://crwn-shop-clothing.netlify.app/
+[![Netlify Status](https://api.netlify.com/api/v1/badges/7b422fc2-59c1-4f8b-b729-c174a3fd2002/deploy-status)](https://app.netlify.com/sites/about-me-v1/deploys)
 
 ## 1. 소개 및 참여 인원
 - 쇼핑몰을 구성하고, 로그인, 장바구니 추가, 구매기능 구현 예정
