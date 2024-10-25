@@ -152,72 +152,12 @@ const { category } = useParams();
 App 컴포넌트 전역 사용하기 위해 
 UserProvider, ProductsProvider, CartProvider 로 감쌈
 
-```
-export const CartProvider = ({children}) => {
-    const [isCartOpen, setIsCartOpen] = useState(false);
-    const [cartItems, setCartItems] = useState([]);
-    const [cartCount, setCartCount] = useState(0);
+user.constext.jsx
+cart.constext.jsx
+categories.constext.jsx
 
-    useEffect(() => {
-        const newCartCount = cartItems.reduce((total, cartItem) => total + cartItem.quantity ,0);
-        setCartCount(newCartCount);
-    }, [cartItems])
-    
-    const addItemToCart = (productToAdd) => {
-        setCartItems(addCartItem(cartItems, productToAdd)); // 상품 추가
-    }
+참고
 
-    const removeItemToCart = (cartItemToRemove) => {
-      setCartItems(removeCartItem(cartItems, cartItemToRemove)); 
-    };
-
-    const clearItemToCart = (cartItemToClear) => {
-      setCartItems(clearCartItem(cartItems, cartItemToClear)); 
-    };
-
-    const value = {
-      isCartOpen,
-      setIsCartOpen,
-      cartItems,
-      addItemToCart,
-      removeItemToCart,
-      cartCount,
-    }; // 전역 상태 값
-    return (
-        <CartContext.Provider value={value}>{children}</CartContext.Provider>
-    );
-};
-```
-
-```
-export const ProductsProvider = ({children}) => {
-    const [products, setProducts] = useState(PRODUCTS);
-    const value = {products};
-    return <ProductContext.Provider value={value} >{children}</ProductContext.Provider>;
-}
-```
-
-```
-export const UserProvider = ({ children }) => {
-    const [currentUser, setCurrentUser] = useState(null);
-    const value = { currentUser, setCurrentUser };
-
-
-    useEffect(() => {
-      const unsubscribe = onAuthStateChangedListener((user) => {
-        console.log(user);
-        if(user) {
-          createUserDocumentFromAuth(user);
-        }
-        setCurrentUser(user);
-      });
-
-      return unsubscribe;
-    }, []);
-
-    return <UserContext.Provider value={value} >{children}</UserContext.Provider>
-}
-```
 최종적으로 Provider를 반환하여, value 속성을 통해 장바구니와 관련된 상태 및 함수들을 하위 컴포넌트에 전달
 
 ### useReducer와 UserContext
