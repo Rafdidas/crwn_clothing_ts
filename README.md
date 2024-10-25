@@ -217,7 +217,24 @@ export const UserProvider = ({ children }) => {
     return <UserContext.Provider value={value} >{children}</UserContext.Provider>
 }
 ```
-개념은 이해 하였지만 구성에 있어서 난항
+최종적으로 Provider를 반환하여, value 속성을 통해 장바구니와 관련된 상태 및 함수들을 하위 컴포넌트에 전달
+
+### useReducer와 UserContext
+- 개념적 차이
+  #### useReducer : 
+  - useReducer는 React의 훅 중 하나로, 컴포넌트의 상태를 관리하는 데 사용
+  - useState와 유사하지만, 여러 상태를 객체 형태로 관리할 수 있고, 액션과 리듀서를 통해 상태를 업데이트 이로 인해 상태 변경 로직을 더 명확하고 예측 가능하게 만들 수 있다.
+  - 주로 특정 컴포넌트 내에서 상태를 관리하는 데 사용
+  #### UserContext :
+  - UserContext는 React의 Context API를 사용하여 상태를 전역에서 공유하는 용도
+  - Context는 컴포넌트 트리 전체에서 데이터를 전달할 수 있게 해 주며, 중간 컴포넌트를 통해 props를 전달하지 않고도 상태를 공유
+  - 인증된 사용자 정보, 테마 설정, 언어 선택 등을 Context를 통해 하위 컴포넌트에서 사용
+  - 상태를 전역에서 공유해야 할 필요가 있을 때 사용
+  #### 결론
+  - **useReducer**는 복잡한 상태 로직을 다루기 위한 방법이며, 상태 관리를 위한 리듀서를 사용
+  - **UserContext**는 전역 상태를 공유하기 위한 방법으로, Context API를 사용하여 데이터를 전달
+  
+
 
 ## 7. firebase 구성
 ```
