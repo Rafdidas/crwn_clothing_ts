@@ -16,6 +16,7 @@
 ![SASS](https://img.shields.io/badge/SASS-hotpink.svg?style=for-the-badge&logo=SASS&logoColor=white)
 ![Firebase](https://img.shields.io/badge/firebase-a08021?style=for-the-badge&logo=firebase&logoColor=ffcd34)
 ![Styled Components](https://img.shields.io/badge/styled--components-DB7093?style=for-the-badge&logo=styled-components&logoColor=white)
+![Redux](https://img.shields.io/badge/redux-%23593d88.svg?style=for-the-badge&logo=redux&logoColor=white)
 
 ## 3. 핵심 기능
 - 쇼핑몰 사이트
@@ -248,7 +249,7 @@ export const createUserDocumentFromAuth = async (userAuth, additionalInformation
 };
 ```
 
-## 7. Redux 구성
+## 8. Redux 구성
 - userContext 를 Redux 구성
 - UserProvider 를 삭제 후 react-redux Provider
 ```
@@ -270,7 +271,7 @@ root.render(
 );
 ```
 
-- store.js
+#### store.js
 - redux-logger는 Redux 미들웨어로, 액션이 디스패치될 때마다 상태 변경 내역을 콘솔에 출력
 - rootReducer는 애플리케이션의 모든 리듀서를 합친 루트 리듀서 여러 개의 리듀서를 combineReducers 함수로 결합
 - const middleWares = [logger]; 미들웨어를 관리할 배열을 만들고, 그 안에 logger 미들웨어를 추가
@@ -293,7 +294,7 @@ export const store = createStore(rootReducer, undefined, composedEnhancers);
 
 ```
 
-- user.reducer.js
+#### user.reducer.js
 - userReducer는 Redux의 리듀서 함수로, 특정 액션이 디스패치될 때 상태를 업데이트
 - action 객체에서 type과 payload를 구조 분해 할당으로 가져옴
 - switch 문을 사용하여 액션의 type에 따라 상태를 업데이트
@@ -319,7 +320,7 @@ export const userReducer = (state = INITIAL_STATE, action) => {
 
 ```
 
-- user.action.js
+#### user.action.js
 - createAction(type, payload)를 호출하면 { type, payload } 형태의 객체를 반환
 - setCurrentUser는 user라는 인자를 받아, USER_ACTION_TYPES.SET_CURRENT_USER 타입의 액션 객체를 반환하는 액션 생성 함수
 - createAction을 통해 { type: USER_ACTION_TYPES.SET_CURRENT_USER, payload: user } 형태의 객체를 반환
@@ -332,4 +333,15 @@ import { createAction } from "../../utils/reducer/reducer.utils";
 export const setCurrentUser = (user) => {
     return createAction(USER_ACTION_TYPES.SET_CURRENT_USER, user);
 }
+```
+
+#### user.selector.js
+- 이 state는 Redux 스토어의 전체 상태를 나타냄
+- state.user.currentUser를 통해 Redux 스토어에서 user 리듀서의 상태에서 currentUser 값을 가져옴
+- state.user는 userReducer에서 관리하는 상태를 포함하는 객체
+- currentUser는 현재 사용자의 정보를 담고 있는 속성
+- 이 값은 로그인된 사용자 정보가 포함되거나, 사용자가 로그인하지 않았다면 null
+
+```
+export const selectCurrentUser = (state) => state.user.currentUser;
 ```
