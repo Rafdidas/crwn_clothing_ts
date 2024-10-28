@@ -5,7 +5,7 @@ const INITIAL_STATE = {
 };
 
 //상태를 업데이트하는 함수
-export const userReducer = (state = INITIAL_STATE, action) => {
+export const userReducer = (state = INITIAL_STATE, action = {} ) => {
   const { type, payload } = action;
 
   switch (type) {
