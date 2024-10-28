@@ -14,6 +14,10 @@ export const USER_ACTION_TYPES = {
   SET_CURRENT_USER: "SET_CURRENT_USER",
 };
 
+const INITIAL_STATE = {
+  currentUser: null,
+};
+
 //상태를 업데이트하는 함수
 const userReducer = (state, action) => {
   const { type, payload } = action;
@@ -27,10 +31,6 @@ const userReducer = (state, action) => {
     default:
       throw new Error(`Unhandled type ${type} in userReducer`);
   }
-}
-
-const INITIAL_STATE = {
-  currentUser: null
 }
 
 export const UserProvider = ({ children }) => {

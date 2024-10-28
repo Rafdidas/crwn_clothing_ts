@@ -247,3 +247,89 @@ export const createUserDocumentFromAuth = async (userAuth, additionalInformation
   return userDocRef; //유저의 문서 참조(userDocRef)를 반환
 };
 ```
+
+## 7. Redux 구성
+- userContext 를 Redux 구성
+- UserProvider 를 삭제 후 react-redux Provider
+```
+import { Provider } from 'react-redux';
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <React.StrictMode>
+    <Provider store={store}>
+      <BrowserRouter>
+        <CategoriesProvider>
+          <CartProvider>
+            <App />
+          </CartProvider>
+        </CategoriesProvider>
+      </BrowserRouter>
+    </Provider>
+  </React.StrictMode>
+);
+```
+
+- store.js
+- redux-logger는 Redux 미들웨어로, 액션이 디스패치될 때마다 상태 변경 내역을 콘솔에 출력
+- rootReducer는 애플리케이션의 모든 리듀서를 합친 루트 리듀서 여러 개의 리듀서를 combineReducers 함수로 결합
+- const middleWares = [logger]; 미들웨어를 관리할 배열을 만들고, 그 안에 logger 미들웨어를 추가
+- applyMiddleware를 사용하여 미들웨어를 추가하고, compose로 미들웨어를 결합하여 Redux가 이를 사용할 수 있게 함
+- createStore 함수를 사용해 Redux 스토어를 생성
+- 첫 번째 인자는 루트 리듀서, 두 번째 인자는 초기 상태로 undefined가 들어가며, 세 번째 인자로 composedEnhancers
+- 이렇게 생성된 store는 애플리케이션의 전역 상태를 관리
+- compose는 이 미들웨어들이 순서대로 동작하도록 연결해줍니다. compose는 여러 enhancer를 결합할 수 있게 해주는 함수로, Redux에서는 applyMiddleware 같은 enhancer를 compose로 결합하여 createStore의 세 번째 인자로 전달
+
+```
+import { compose,  legacy_createStore as createStore, applyMiddleware } from "redux";
+import logger from "redux-logger"; 
+
+import { rootReducer } from "./root-reducer";
+
+const middleWares = [logger];
+const composedEnhancers = compose(applyMiddleware(...middleWares)); 
+
+export const store = createStore(rootReducer, undefined, composedEnhancers);
+
+```
+
+- user.reducer.js
+- userReducer는 Redux의 리듀서 함수로, 특정 액션이 디스패치될 때 상태를 업데이트
+- action 객체에서 type과 payload를 구조 분해 할당으로 가져옴
+- switch 문을 사용하여 액션의 type에 따라 상태를 업데이트
+
+```
+import { USER_ACTION_TYPES } from "./user.types";
+
+const INITIAL_STATE = {
+  currentUser: null,
+};
+
+//상태를 업데이트하는 함수
+export const userReducer = (state = INITIAL_STATE, action) => {
+  const { type, payload } = action;
+
+  switch (type) {
+    case USER_ACTION_TYPES.SET_CURRENT_USER:
+      return { ...state, currentUser: payload };
+    default:
+      return state;
+  }
+};
+
+```
+
+- user.action.js
+- createAction(type, payload)를 호출하면 { type, payload } 형태의 객체를 반환
+- setCurrentUser는 user라는 인자를 받아, USER_ACTION_TYPES.SET_CURRENT_USER 타입의 액션 객체를 반환하는 액션 생성 함수
+- createAction을 통해 { type: USER_ACTION_TYPES.SET_CURRENT_USER, payload: user } 형태의 객체를 반환
+- 이 함수가 반환하는 객체는 Redux 스토어에 디스패치되어, userReducer가 이를 통해 상태를 업데이트
+
+```
+import { USER_ACTION_TYPES } from "./user.types";
+import { createAction } from "../../utils/reducer/reducer.utils";
+
+export const setCurrentUser = (user) => {
+    return createAction(USER_ACTION_TYPES.SET_CURRENT_USER, user);
+}
+```

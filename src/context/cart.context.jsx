@@ -54,7 +54,7 @@ const CART_ACTION_TYPES = {
     SET_CART_ITEMS: 'SET_CART_ITEMS',
     SET_IS_CART_OPEN: 'SET_IS_CART_OPEN',
 }
-
+// 장바구니의 초기 상태를 정의
 const INITIAL_STATE = {
   isCartOpen: false,
   cartItems: [],
