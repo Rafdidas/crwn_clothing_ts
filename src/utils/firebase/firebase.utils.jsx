@@ -62,13 +62,7 @@ export const getCategoriesAndDocuments = async () => {
   const q = query(collectionRef); // 해당 컬렉션에 대해 쿼리를 생성
 
   const querySnapshot = await getDocs(q); // 쿼리 결과로부터 문서 스냅샷을 가져옴
-  const categoryMap = querySnapshot.docs.reduce((acc, docSnapshot) => {
-    const { title, items } = docSnapshot.data(); // 각 문서에서 title과 items를 추출
-    acc[title.toLowerCase()] = items; // title을 소문자로 변환한 것을 키로 하여 items를 저장
-    return acc; // 누적된 객체를 반환
-  }, {});
-
-  return categoryMap; // 최종적으로 categories 데이터를 반환
+  return querySnapshot.docs.map((docSnapshot) => docSnapshot.data());
 };
 
 // Firebase 인증을 통해 로그인한 유저의 정보를 Firestore 데이터베이스에 저장
