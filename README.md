@@ -349,3 +349,80 @@ export const setCurrentUser = (user) => {
 export const selectCurrentUser = (state) => state.user.currentUser;
 ```
 - categories, cart context도 redux로 구성
+
+## 8-1 redux-persist
+- yarn add redux-persist
+- Redux 상태를 지속적으로 유지(persist)하기 위한 라이브러리
+- 이로 인해 사용자가 애플리케이션을 새로 고침하거나 종료한 후 다시 실행하더라도, Redux 상태가 초기화되지 않고 마지막 상태가 그대로 유지
+
+### 주요 기능
+- 스토어 지속성 유지: 상태 데이터를 브라우저 스토리지에 저장하고, 애플리케이션 재실행 시 저장된 상태를 불러옴
+- 화이트리스트/블랙리스트: 특정 리듀서의 상태만 선택적으로 저장하거나 제외 가능
+- 자동 복원: 새로 고침 시 저장된 상태를 자동으로 복원하여 상태 초기화를 방지
+
+
+- persistStore, persistReducer: redux-persist에서 스토어를 유지시키는 데 필요한 함수
+- storage: localStorage에 데이터를 저장하는 저장소 설정
+- persistConfig: 어떤 상태를 지속적으로 유지할지 설정하는 객체
+- key: 'root': Redux persist의 키를 'root'로 지정하여 스토리지에 저장할 때 구분
+- storage: localStorage를 사용하도록 설정
+- blacklist: user 리듀서의 상태는 저장되지 않도록 블랙리스트에 추가
+
+
+```
+import { compose,  legacy_createStore as createStore, applyMiddleware } from "redux";
+import { persistStore, persistReducer } from "redux-persist";
+import storage from 'redux-persist/lib/storage';
+//import logger from "redux-logger";
+
+import { rootReducer } from "./root-reducer";
+
+const loggerMiddleware = (store) => (next) => (action) => {
+    if(!action.type) {
+        return next(action);
+    }
+
+    console.log('type: ', action.type);
+    console.log("payload: ", action.payload);
+    console.log("currentState: ", store.getState());
+
+    next(action);
+    console.log("next state: ", store.getState());
+};
+
+const persistConfig = {
+    key: 'root',
+    storage,
+    blacklist: ['user'],   
+}
+
+const persistedReducer = persistReducer(persistConfig, rootReducer);
+
+const middleWares = [loggerMiddleware];
+const composedEnhancers = compose(applyMiddleware(...middleWares)); 
+
+export const store = createStore(persistedReducer, undefined, composedEnhancers);
+export const persistor = persistStore(store);
+```
+- persistedReducer: rootReducer에 persistConfig 설정을 반영한 리듀서를 만듦
+- persistor: persistStore(store)로 스토어가 유지될 수 있도록 설정된 객체
+
+### index.js
+
+- PersistGate: redux-persist에서 제공하는 컴포넌트로, persistor가 Redux 스토어를 유지하게 함
+- store와 persistor: 전역 상태 관리를 위해 store는 Redux 스토어, persistor는 redux-persist에서 상태를 지속시키기 위한 객체
+- 
+```
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <React.StrictMode>
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </PersistGate>
+    </Provider>
+  </React.StrictMode>
+);
+```

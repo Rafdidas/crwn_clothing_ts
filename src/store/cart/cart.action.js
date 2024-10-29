@@ -1,10 +1,6 @@
 import { CART_ACTION_TYPES } from "./cart.types";
 import { createAction } from "../../utils/reducer/reducer.utils";
 
-
-
-
-
 // 상품이 이미 장바구니에 있는지 확인하고, 있으면 수량을 늘리고 없으면 새로 추가
 export const addCartItem = (cartItems, productToAdd) => {
     const existingCartItem = cartItems.find(
