@@ -138,6 +138,7 @@ const { category } = useParams();
 ```
 
 ## 6. Context 개념 다지기
+### 현재 Redux로 이식함
 - context를 이용하면 단계마다 일일이 props를 넘겨주지 않고도 컴포넌트 트리 전체에 데이터를 제공
 - context는 React 컴포넌트 트리 안에서 전역적(global)이라고 볼 수 있는 데이터를 공유할 수 있도록 고안된 방법
 - 그러한 데이터로는 현재 로그인한 유저, 카트에 담긴 상품을 쓸 수 있으므로 쇼핑몰에 사용
@@ -252,6 +253,8 @@ export const createUserDocumentFromAuth = async (userAuth, additionalInformation
 ## 8. Redux 구성
 - userContext 를 Redux 구성
 - UserProvider 를 삭제 후 react-redux Provider
+- yarn add redux react-redux redux-logger
+- yarn add reselect
 ```
 import { Provider } from 'react-redux';
 
@@ -345,3 +348,4 @@ export const setCurrentUser = (user) => {
 ```
 export const selectCurrentUser = (state) => state.user.currentUser;
 ```
+- categories, cart context도 redux로 구성
