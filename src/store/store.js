@@ -1,22 +1,9 @@
 import { compose,  legacy_createStore as createStore, applyMiddleware } from "redux";
 import { persistStore, persistReducer } from "redux-persist";
 import storage from 'redux-persist/lib/storage';
-//import logger from "redux-logger"; // 액션이 디스패치될 때마다 상태 변경 내역을 콘솔에 출력
+import logger from "redux-logger"; // 액션이 디스패치될 때마다 상태 변경 내역을 콘솔에 출력
 
 import { rootReducer } from "./root-reducer";
-
-const loggerMiddleware = (store) => (next) => (action) => {
-    if(!action.type) {
-        return next(action);
-    }
-
-    console.log('type: ', action.type);
-    console.log("payload: ", action.payload);
-    console.log("currentState: ", store.getState());
-
-    next(action);
-    console.log("next state: ", store.getState());
-};
 
 const persistConfig = {
     key: 'root',
@@ -26,8 +13,10 @@ const persistConfig = {
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
-const middleWares = [loggerMiddleware]; // 미들웨어를 관리할 배열을 만들고, 그 안에 logger 미들웨어를 추가
-const composedEnhancers = compose(applyMiddleware(...middleWares)); // applyMiddleware를 사용하여 미들웨어를 추가하고, compose로 미들웨어를 결합하여 Redux가 이를 사용할 수 있게 함
+const middleWares = [process.env.NODE_ENV === 'development' && logger].filter(Boolean); // 미들웨어를 관리할 배열을 만들고, 그 안에 logger 미들웨어를 추가
+
+const composeEnhancer = (process.env.NODE_ENV !== 'production' && window && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__) || compose;
+const composedEnhancers = composeEnhancer(applyMiddleware(...middleWares)); // applyMiddleware를 사용하여 미들웨어를 추가하고, compose로 미들웨어를 결합하여 Redux가 이를 사용할 수 있게 함
 
 export const store = createStore(persistedReducer, undefined, composedEnhancers);
 // createStore 함수를 사용해 Redux 스토어를 생성

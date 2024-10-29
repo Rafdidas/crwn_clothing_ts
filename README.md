@@ -373,22 +373,9 @@ export const selectCurrentUser = (state) => state.user.currentUser;
 import { compose,  legacy_createStore as createStore, applyMiddleware } from "redux";
 import { persistStore, persistReducer } from "redux-persist";
 import storage from 'redux-persist/lib/storage';
-//import logger from "redux-logger";
+import logger from "redux-logger";
 
 import { rootReducer } from "./root-reducer";
-
-const loggerMiddleware = (store) => (next) => (action) => {
-    if(!action.type) {
-        return next(action);
-    }
-
-    console.log('type: ', action.type);
-    console.log("payload: ", action.payload);
-    console.log("currentState: ", store.getState());
-
-    next(action);
-    console.log("next state: ", store.getState());
-};
 
 const persistConfig = {
     key: 'root',
@@ -398,11 +385,14 @@ const persistConfig = {
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
-const middleWares = [loggerMiddleware];
-const composedEnhancers = compose(applyMiddleware(...middleWares)); 
+const middleWares = [process.env.NODE_ENV === 'development' && logger].filter(Boolean);
+
+const composeEnhancer = (process.env.NODE_ENV !== 'production' && window && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__) || compose;
+const composedEnhancers = composeEnhancer(applyMiddleware(...middleWares));
 
 export const store = createStore(persistedReducer, undefined, composedEnhancers);
 export const persistor = persistStore(store);
+
 ```
 - persistedReducer: rootReducer에 persistConfig 설정을 반영한 리듀서를 만듦
 - persistor: persistStore(store)로 스토어가 유지될 수 있도록 설정된 객체
@@ -411,7 +401,7 @@ export const persistor = persistStore(store);
 
 - PersistGate: redux-persist에서 제공하는 컴포넌트로, persistor가 Redux 스토어를 유지하게 함
 - store와 persistor: 전역 상태 관리를 위해 store는 Redux 스토어, persistor는 redux-persist에서 상태를 지속시키기 위한 객체
-- 
+
 ```
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
