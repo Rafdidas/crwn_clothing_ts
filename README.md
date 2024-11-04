@@ -416,3 +416,92 @@ root.render(
   </React.StrictMode>
 );
 ```
+
+### redux-thunk
+
+- yarn add redux-thunk
+- Redux 미들웨어를 간단하게 요약하면 action을 dispatch로 전달하고 reducer에 도달하기 이전에 지정된 작업을 실행할 수 있게 해주는 중간자이다. 
+- reducer가 dispatch 받은 액션을 처리하기 전에 할 수 있는 작업들은 다양한데 예를 들면 로깅, API 비동기 작업, 라우팅 등이 있다. 
+- 비동기처리를 위한 미들웨어 : Redux Thunk
+- Redux Thunk는 리덕스를 사용하는 앱에서 비동기 작업을 수행할 때 많이 사용하는 방법이다. 
+- 리덕스에서 상태값을 변화시키기 위해 useDispatch 함수를 사용하여 액션 객체를 생성하여 reducer 에게 전달하게 되는데 
+- Redux Thunk를 사용하면 Thunk 함수를 dispatch하고 사전에 수행해야 할 작업을 처리 후 결과 값을 함수 내부에서 다시 dispatch 하여 reducer에게 전달할 수 있다.
+
+- store.js 추가 부분
+```
+const middleWares = [
+  process.env.NODE_ENV === "development" && logger,
+  thunk,
+].filter(Boolean);
+```
+
+- categoty.types 추가 부분
+```
+export const CATEGORIES_ACTION_TYPES = {
+  FETCH_CATEGORIES_START: "category/FETCH_CATEGORIES_START",
+  FETCH_CATEGORIES_SUCCESS: "category/FETCH_CATEGORIES_SUCCESS",
+  FETCH_CATEGORIES_FAILED: "category/FETCH_CATEGORIES_FAILED",
+};
+```
+
+- categoty.reducer 추가 부분
+```
+import { CATEGORIES_ACTION_TYPES } from "./category.types";
+
+export const CATEGORIES_INITIAL_STATE = {
+    categories: [],
+    isLoading: false,
+    error: null,
+};
+
+export const categoriesReducer = (state = CATEGORIES_INITIAL_STATE, action = {} ) => {
+    const { type, payload } = action;
+    
+    switch (type) {
+      case CATEGORIES_ACTION_TYPES.FETCH_CATEGORIES_START:
+        return { ...state, isLoading: true };
+      case CATEGORIES_ACTION_TYPES.FETCH_CATEGORIES_SUCCESS:
+        return { ...state, categories: payload, isLoading: false };
+      case CATEGORIES_ACTION_TYPES.FETCH_CATEGORIES_FAILED:
+        return { ...state, error: payload, isLoading: false };
+      default:
+        return state;
+    }
+}
+```
+
+- category.action 추가 부분
+```
+import { CATEGORIES_ACTION_TYPES } from "./category.types";
+
+import { createAction } from "../../utils/reducer/reducer.utils";
+import { getCategoriesAndDocuments } from "../../utils/firebase/firebase.utils";
+
+
+export const fetchCategoriesStart = () => 
+  createAction(CATEGORIES_ACTION_TYPES.FETCH_CATEGORIES_START);
+
+export const fetchCategoriesSuccess = (categories) =>
+  createAction(CATEGORIES_ACTION_TYPES.FETCH_CATEGORIES_SUCCESS, categories);
+
+export const fetchCategoriesFailed = (error) =>
+  createAction(CATEGORIES_ACTION_TYPES.FETCH_CATEGORIES_FAILED, error);
+
+export const fetchCategoriesAsync = () => async (dispatch) => {
+  dispatch(fetchCategoriesStart());
+  try {
+    const categories = await getCategoriesAndDocuments("categories");  
+    dispatch(fetchCategoriesSuccess(categories));
+  } catch (error) {
+    dispatch(fetchCategoriesFailed(error));
+  }
+}
+```
+
+- category.selector 추가 부분
+```
+export const selectCategoriesIsLoading = createSelector(
+    [selectCategoryReducer],
+    (categoriesSlice) => categoriesSlice.isLoading
+)
+```
