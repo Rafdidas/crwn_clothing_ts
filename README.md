@@ -505,3 +505,7 @@ export const selectCategoriesIsLoading = createSelector(
     (categoriesSlice) => categoriesSlice.isLoading
 )
 ```
+
+### redux-saga
+- yarn add redux-saga
+- redux-thunk 를 대체할 예제
