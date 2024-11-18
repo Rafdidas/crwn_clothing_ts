@@ -91,7 +91,7 @@ export const createUserDocumentFromAuth = async (userAuth, additionalInformation
     }
   }
   // 유저 데이터 존재
-  return userDocRef; //유저의 문서 참조(userDocRef)를 반환
+  return userSnapshot; //유저의 문서 참조(userDocRef)를 반환
 };
 
 // 이메일과 비밀번호로 Firebase 인증을 통해 새로운 유저를 생성하는 함수
@@ -110,3 +110,16 @@ export const signInAuthUserWithEmailAndPassword = async (email, password) => {
 export const signOutUser = async () => await signOut(auth);
 // 유저의 로그인 상태가 변경될 때마다 특정 콜백 함수를 호출
 export const onAuthStateChangedListener = (callback) => onAuthStateChanged(auth, callback);
+
+export const getCurrentUser = () => {
+  return new Promise((resolve, reject) => {
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      (userAuth) => {
+        unsubscribe();
+        resolve(userAuth);
+      },
+      reject
+    );
+  });
+};
