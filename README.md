@@ -509,3 +509,150 @@ export const selectCategoriesIsLoading = createSelector(
 ### redux-saga
 - yarn add redux-saga
 - redux-thunk 를 대체할 예제
+
+### stripe 결제 추가
+- Elements는 Stripe 컨텍스트를 제공하는 컴포넌트로, 내부적으로 Stripe API와 통신하며, 해당 컴포넌트 안에서 Stripe의 결제와 관련된 모든 컴포넌트를 사용할 수 있도록 설정해 줍니다.
+- Elements는 Stripe API 키를 필요로 하며, 애플리케이션 전반에 걸쳐 Stripe 객체를 공유할 수 있도록 합니
+- stripePromise는 loadStripe 함수로 생성된 Promise 객체입니다.
+- Stripe API 키를 제공하여 초기화된 Stripe 객체를 비동기로 로드합니다.
+- stripePromise를 Elements 컴포넌트에 전달하면 내부적으로 Stripe 객체를 생성하고 결제 관련 컴포넌트와 연결합니다.
+```
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <React.StrictMode>
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <BrowserRouter>
+          <Elements stripe={stripePromise}>
+            <App />
+          </Elements>
+        </BrowserRouter>
+      </PersistGate>
+    </Provider>
+  </React.StrictMode>
+);
+```
+- stripePromise는 보통 별도의 유틸리티 파일에서 정의
+- loadStripe 함수에 Publishable Key를 전달하여 Stripe 객체를 초기화합니다.
+(이 키는 Stripe 대시보드에서 확인 가능하며, 반드시 공개 가능한 키여야 합니다.)
+- 
+```
+import { loadStripe } from "@stripe/stripe-js";
+
+export const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
+```
+
+- payment-form.component.jsx
+- useStripe() : Stripe 인스턴스를 반환하며, 결제를 처리할 때 사용
+- Elements 컴포넌트 안에서 호출되어야 정상적으로 동작
+- useElements() : CardElement와 같은 Stripe의 UI 컴포넌트를 관리하는 객체를 반환
+- amount : Redux 스토어에서 총 결제 금액을 가져옵니다.
+- Stripe에서는 금액을 센트 단위로 요구하므로, 100을 곱해 전달
+- currentUser : 현재 로그인한 사용자 정보를 가져옵니다.
+- 결제 정보에 사용자의 이름을 포함
+
+- 결제 처리 상태 관리
+- const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+- 결제 진행 중 상태를 관리
+- 결제 버튼의 로딩 상태와 사용자 피드백에 활용
+
+- 결제 처리 핸들러 (paymentHandler)
+- 이 함수는 결제 과정을 처리하는 핵심 로직
+- Stripe와 Elements 객체가 제대로 로드되지 않았을 경우 결제를 중단
+
+- 결제 Intent 생성 요청
+- 서버로 결제 Intent를 생성하는 요청을 보냅니다.
+- /create-payment-intent는 서버리스 함수(예: Netlify Functions)로 구현되어 있습니다.
+- 요청 본문에 결제 금액(amount * 100) 을 포함
+
+- 클라이언트 Secret 추출
+- const { paymentIntent: { client_secret } } = response;
+- 서버로부터 응답받은 client_secret은 결제 Intent와 연결된 Stripe 고유 식별자
+- 이 값은 결제를 인증하는 데 사용
+
+- 결제 인증 요청 (const paymentResult)
+- Stripe의 confirmCardPayment 메서드를 호출하여 실제 결제를 처리
+- card: CardElement로부터 카드 정보를 가져옵니다.
+- billing_details: 사용자의 이름을 포함
+
+- 결제 결과 처리
+- 성공: paymentIntent.status가 succeeded이면 결제 성공으로 처리
+- 실패: paymentResult.error가 존재하면 실패 이유를 사용자에게 알립니다.
+
+- 전체 흐름
+- 사용자가 결제 정보를 입력하고 "Pay now" 버튼을 클릭합니다.
+- paymentHandler가 호출
+- 서버로 결제 Intent 생성 요청 → 클라이언트 Secret 반환
+- Stripe로 결제 인증 요청 → 결제 결과 반환
+- 결제 성공 또는 실패에 따라 사용자에게 결과를 알립니다.
+
+- 서버리스 함수의 역할
+- Endpoint: /.netlify/functions/create-payment-intent
+- Stripe의 서버 API를 호출해 결제 Intent를 생성
+- 클라이언트 Secret을 반환
+```
+const PaymentForm = () => {
+    const stripe = useStripe();
+    const elements = useElements();
+
+    const amount = useSelector(selectCartTotal);
+    const currentUser = useSelector(selectCurrentUser);
+    const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+
+
+    const paymentHandler = async (e) => {
+        e.preventDefault();
+
+        if(!stripe || !elements){
+            return;
+        }
+        setIsProcessingPayment(true);
+
+        const reponse = await fetch('/.netlify/functions/create-payment-intent', {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ amount: amount * 100 }),
+        }).then(res => res.json());
+
+        const {paymentIntent: { client_secret }} = reponse;
+
+        console.log(client_secret);
+
+        const paymentResult = await stripe.confirmCardPayment(client_secret, {
+          payment_method: {
+            card: elements.getElement(CardElement),
+            billing_details: {
+              name: currentUser ? currentUser.displayName : 'Guest',
+            },
+          },
+        });
+
+        setIsProcessingPayment(false);
+
+        if (paymentResult.error) {
+          alert(paymentResult.error);
+        } else {
+          if (paymentResult.paymentIntent.status === 'succeeded') {
+            alert('Payment Successful');
+          }
+        }
+    }   
+
+    return (
+      <PaymentFormContainer>
+        <FormContainer onSubmit={paymentHandler}>
+          <h2>Credit Card Payment: </h2>
+          <CardElement />
+          <PaymentButton 
+            isLoading={isProcessingPayment}
+            buttonType={BUTTON_TYPES_CLASSES.inverted}
+          > Pay now </PaymentButton>
+        </FormContainer>
+      </PaymentFormContainer>
+    );
+}
+
+export default PaymentForm;
+```
