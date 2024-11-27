@@ -22,13 +22,17 @@
 ## reducer.utils.ts
 
 ```
-import { AnyAction } from "redux";
-
 type Matchable<AC extends () => AnyAction> = AC & {
     type: ReturnType<AC>['type'];
     match(action: AnyAction): action is ReturnType<AC>;
 };
+```
+### 1. Matchable 타입
+- Matchable은 actionCreator 함수에 추가적인 속성과 메서드를 부여하는 타입
+- type: 해당 actionCreator가 반환하는 action 객체의 type 속성을 가리킵니다.
+- match(action: AnyAction): 전달된 action 객체의 type이 해당 actionCreator의 type과 동일한지 확인하는 타입 가드 함수
 
+```
 export function withMatcher<AC extends () => 
     AnyAction & { type: string }>(actionCreator: AC): Matchable<AC>;
 
@@ -44,7 +48,12 @@ export function withMatcher(actionCreator: Function ) {
         }
     })
 }
+```
+### 2. withMatcher 함수
+- 기존의 actionCreator 함수에 type과 match 메서드를 추가
+- 이를 통해 action 객체를 생성하는 동시에 해당 action의 type을 쉽게 비교
 
+```
 export type ActionWithPayload<T, P> = {
     type: T;
     payload: P;
@@ -53,7 +62,12 @@ export type ActionWithPayload<T, P> = {
 export type Action<T> = {
     type: T;
 };
+```
+### 3. ActionWithPayload 및 Action 타입
+- ActionWithPayload: type과 payload를 가진 action 객체의 타입
+- Action: payload 없이 type만 있는 간단한 action 객체의 타입
 
+```
 export function createAction<T extends string, P>(
     type: T, 
     payload: P
@@ -67,21 +81,7 @@ export function createAction<T extends string>(
 export function createAction<T extends string, P>(type: T, payload: P) {
     return { type, payload };
 };
-
 ```
-### 1. Matchable 타입
-- Matchable은 actionCreator 함수에 추가적인 속성과 메서드를 부여하는 타입
-- type: 해당 actionCreator가 반환하는 action 객체의 type 속성을 가리킵니다.
-- match(action: AnyAction): 전달된 action 객체의 type이 해당 actionCreator의 type과 동일한지 확인하는 타입 가드 함수
-
-### 2. withMatcher 함수
-- 기존의 actionCreator 함수에 type과 match 메서드를 추가
-- 이를 통해 action 객체를 생성하는 동시에 해당 action의 type을 쉽게 비교
-
-### 3. ActionWithPayload 및 Action 타입
-- ActionWithPayload: type과 payload를 가진 action 객체의 타입
-- Action: payload 없이 type만 있는 간단한 action 객체의 타입
-
 ### 4. createAction 함수
 - createAction의 역할:
 - Redux의 action 객체를 생성
@@ -92,18 +92,18 @@ export function createAction<T extends string, P>(type: T, payload: P) {
 - 위의 오버로드 시그니처를 실제 코드로 구현한 것이 세 번째 createAction 함수
 
 ## category.action.ts
-
 ```
-import { CATEGORIES_ACTION_TYPES, Category } from "./category.types";
-
-import { createAction, Action, ActionWithPayload, withMatcher } from "../../utils/reducer/reducer.utils";
-
 export type FetchCategoriesStart = Action<CATEGORIES_ACTION_TYPES.FETCH_CATEGORIES_START>;
 
 export type FetchCategoriesSuccess = ActionWithPayload<CATEGORIES_ACTION_TYPES.FETCH_CATEGORIES_SUCCESS, Category[]>;
 
 export type FetchCategoriesFailed = ActionWithPayload<CATEGORIES_ACTION_TYPES.FETCH_CATEGORIES_FAILED, Error>;
+```
+### 1. FetchCategoriesStart, FetchCategoriesSuccess, FetchCategoriesFailed 타입
+- edux 액션 객체의 타입을 정의
+- 각 타입은 액션의 **type**과 payload 구조를 명확히 지정
 
+```
 export const fetchCategoriesStart = withMatcher((
 ): FetchCategoriesStart => 
   createAction(CATEGORIES_ACTION_TYPES.FETCH_CATEGORIES_START));
@@ -119,11 +119,6 @@ export const fetchCategoriesSuccess = withMatcher((
 export const fetchCategoriesFailed = withMatcher((error: Error): FetchCategoriesFailed =>
   createAction(CATEGORIES_ACTION_TYPES.FETCH_CATEGORIES_FAILED, error));
 ```
-
-### 1. FetchCategoriesStart, FetchCategoriesSuccess, FetchCategoriesFailed 타입
-- edux 액션 객체의 타입을 정의
-- 각 타입은 액션의 **type**과 payload 구조를 명확히 지정
-
 ### 2. fetchCategoriesStart, fetchCategoriesSuccess, fetchCategoriesFailed 액션 생성자
 - withMatcher를 사용하는 이유:
 - Redux 액션 생성자를 확장하여 type 속성과 match 메서드를 추가
@@ -144,6 +139,10 @@ export const fetchCategoriesFailed = withMatcher((error: Error): FetchCategories
 - 실패 이유(Error 객체)를 payload로 포함하는 액션 객체를 반환
 
 ## categoty.selector.ts
+- rootReducer 완성 후
 ```
 ```
+
+## Cart.reducer.ts, Cart.type.ts, Cart.action.ts
+- 생략
 
