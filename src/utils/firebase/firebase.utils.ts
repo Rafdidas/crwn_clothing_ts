@@ -8,8 +8,9 @@ import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
+  NextOrObserver,
+  User
 } from "firebase/auth";
-
 import {
   getFirestore,
   doc,
@@ -19,7 +20,10 @@ import {
   writeBatch,
   query,
   getDocs,
+  QueryDocumentSnapshot
 } from 'firebase/firestore';
+
+import { Category } from '../../store/categories/category.types';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBJeVOLyj55ZKM8tAdwf08X8T-Bys7wl9I",
@@ -39,13 +43,21 @@ googleProvider.setCustomParameters({
 });
 
 export const auth = getAuth(); // Firebase 인증 객체 생성
-export const signInWhithGooglePopup = () => signInWithPopup(auth, googleProvider); // 팝업
+export const signInWhithGooglePopup = () => 
+  signInWithPopup(auth, googleProvider); // 팝업
 export const signInWhithGoogleRedirect = () =>
   signInWithRedirect(auth, googleProvider); // 리다이렉션
 
 export const db = getFirestore(); // Firestore 데이터베이스 객체를 초기화하여 데이터베이스와 상호작용
 
-export const addCollectionAndDocuments = async (collectionKey, objectsToAdd) => {
+export type ObjectToAdd = {
+  title: string;
+}
+
+export const addCollectionAndDocuments = async <T extends ObjectToAdd>(
+  collectionKey: string, 
+  objectsToAdd : T[],
+): Promise<void> => {
   const collectionRef = collection(db, collectionKey); // Firestore에서 특정 컬렉션을 참조
   const batch = writeBatch(db); // Firestore의 batch 객체를 생성하여 여러 쓰기 작업을 하나의 트랜잭션으로 처리
 
@@ -53,20 +65,36 @@ export const addCollectionAndDocuments = async (collectionKey, objectsToAdd) => 
     const docRef = doc(collectionRef, object.title.toLowerCase()); // 각 객체의 title을 소문자로 변환하여 문서 참조를 생성
     batch.set(docRef, object); // batch에 문서를 설정하여 데이터베이스에 저장할 내용을 정의
   });
+
   await batch.commit(); // 모든 batch 작업을 Firestore에 커밋
   console.log("done");
 };
 
-export const getCategoriesAndDocuments = async () => {
+export const getCategoriesAndDocuments = async (): Promise<Category[]> => {
   const collectionRef = collection(db, "categories"); // 'categories'라는 컬렉션을 참조
   const q = query(collectionRef); // 해당 컬렉션에 대해 쿼리를 생성
 
   const querySnapshot = await getDocs(q); // 쿼리 결과로부터 문서 스냅샷을 가져옴
-  return querySnapshot.docs.map((docSnapshot) => docSnapshot.data());
+  return querySnapshot.docs.map(
+    (docSnapshot) => docSnapshot.data() as Category
+  );
 };
 
+export type AdditionalInformation = {
+  displayName?: string;
+}
+
+export type UserData = {
+  createdAt: Date;
+  displayName: string;
+  email: string;
+}
+
 // Firebase 인증을 통해 로그인한 유저의 정보를 Firestore 데이터베이스에 저장
-export const createUserDocumentFromAuth = async (userAuth, additionalInformation = {}) => {
+export const createUserDocumentFromAuth = async (
+  userAuth: User, 
+  additionalInformation = {} as AdditionalInformation
+): Promise<void | QueryDocumentSnapshot<UserData>> => {
   if (!userAuth) return; // userAuth: Firebase 인증을 통해 전달된 유저 객체
 
   const userDocRef = doc(db, "users", userAuth.uid); // Firestore에서 'users' 컬렉션의 특정 문서를 참
@@ -87,21 +115,21 @@ export const createUserDocumentFromAuth = async (userAuth, additionalInformation
         ...additionalInformation, // 이 부분은 유저 정보가 Firestore에 없는 경우에만 실행
       });
     } catch (error) {
-      console.log("error creating the user", error.message);
+      console.log("error creating the user", error);
     }
   }
   // 유저 데이터 존재
-  return userSnapshot; //유저의 문서 참조(userDocRef)를 반환
+  return userSnapshot as QueryDocumentSnapshot<UserData>; //유저의 문서 참조(userDocRef)를 반환
 };
 
 // 이메일과 비밀번호로 Firebase 인증을 통해 새로운 유저를 생성하는 함수
-export const createAuthUserWithEmailAndPassword = async (email, password) => {
+export const createAuthUserWithEmailAndPassword = async (email: string, password: string) => {
   if(!email || !password) return;
   
   return await createUserWithEmailAndPassword(auth, email, password);
 }
 // 이메일과 비밀번호로 로그인하는 함수
-export const signInAuthUserWithEmailAndPassword = async (email, password) => {
+export const signInAuthUserWithEmailAndPassword = async (email: string, password: string) => {
   if (!email || !password) return;
   
   return await signInWithEmailAndPassword(auth, email, password);
@@ -109,9 +137,9 @@ export const signInAuthUserWithEmailAndPassword = async (email, password) => {
 // 현재 로그인한 유저를 로그아웃하는 함수
 export const signOutUser = async () => await signOut(auth);
 // 유저의 로그인 상태가 변경될 때마다 특정 콜백 함수를 호출
-export const onAuthStateChangedListener = (callback) => onAuthStateChanged(auth, callback);
+export const onAuthStateChangedListener = (callback: NextOrObserver<User>) => onAuthStateChanged(auth, callback);
 
-export const getCurrentUser = () => {
+export const getCurrentUser = (): Promise<User | null> => {
   return new Promise((resolve, reject) => {
     const unsubscribe = onAuthStateChanged(
       auth,

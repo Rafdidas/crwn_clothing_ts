@@ -145,4 +145,16 @@ export const fetchCategoriesFailed = withMatcher((error: Error): FetchCategories
 
 ## Cart.reducer.ts, Cart.type.ts, Cart.action.ts
 - 생략
+```
+```
+
+## firebase.utils.ts
+- 생략
+```
+```
+
+## User.reducer.ts, User.type.ts, User.action.ts
+- 생략
+```
+```
 
