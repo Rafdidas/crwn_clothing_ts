@@ -1,15 +1,27 @@
-import { compose,  legacy_createStore as createStore, applyMiddleware } from "redux";
-import { persistStore, persistReducer } from "redux-persist";
+import { compose,  legacy_createStore as createStore, applyMiddleware, Middleware } from "redux";
+import { persistStore, persistReducer, PersistConfig } from "redux-persist";
 import storage from 'redux-persist/lib/storage';
 
 import logger from "redux-logger"; // 액션이 디스패치될 때마다 상태 변경 내역을 콘솔에 출력
 // import { thunk } from "redux-thunk";
+import createSagaMiddleware from "redux-saga";
+import { rootSaga } from "./root-saga";
 
 import { rootReducer } from "./root-reducer";
-import { rootSaga } from "./root-saga";
-import createSagaMiddleware from "redux-saga";
 
-const persistConfig = {
+export type RootState = ReturnType<typeof rootReducer>
+
+declare global {
+  interface Window {
+    __REDUX_DEVTOOLS_EXTENSION_COMPOSE__?: typeof compose
+  }
+}
+
+type ExtendedPersistConfig = PersistConfig<RootState> & {
+  whitelist: (keyof RootState)[]
+}
+
+const persistConfig: ExtendedPersistConfig = {
     key: 'root',
     storage,
     whitelist: ['cart'],   
@@ -20,13 +32,16 @@ const sagaMiddleware = createSagaMiddleware();
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
 const middleWares = [
-  process.env.NODE_ENV === "development" && logger,
+  process.env.NODE_ENV !== "production" && logger,
   sagaMiddleware,
-].filter(Boolean); // 미들웨어를 관리할 배열
+].filter((middleware): middleware is Middleware => Boolean(middleware)); // 미들웨어를 관리할 배열
 
-
-
-const composeEnhancer = (process.env.NODE_ENV !== 'production' && window && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__) || compose;
+const composeEnhancer = 
+  (process.env.NODE_ENV !== 'production' && 
+    window && 
+    window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__) || 
+    compose;
+    
 const composedEnhancers = composeEnhancer(applyMiddleware(...middleWares)); // applyMiddleware를 사용하여 미들웨어를 추가하고, compose로 미들웨어를 결합하여 Redux가 이를 사용할 수 있게 함
 
 export const store = createStore(persistedReducer, undefined, composedEnhancers);
