@@ -10,7 +10,7 @@ import { selectCurrentUser } from "../../store/user/user.selector";
 import CartIcon from "../../components/cart-icon/cart-icon.component";
 import CartDropdown from "../../components/cart-dropdown/cart-dropdown.component";
 
-import { NavigationContainer, NavLinks, NavLink, LogoContainer } from "./navigation.styles";
+import { NavigationContainer, NavLinks, NavLink, LogoContainer, Navout } from "./navigation.styles";
 import { signOutStart } from "../../store/user/user.action";
 
 const Navigation = () => {
@@ -31,9 +31,9 @@ const Navigation = () => {
             SHOP
           </NavLink>
           {currentUser ? (
-            <NavLink as='span' onClick={signOutUser}>
+            <Navout onClick={signOutUser}>
               SIGN OUT
-            </NavLink>
+            </Navout>
           ) : (
             <NavLink to={"/auth"}>
               SIGN IN

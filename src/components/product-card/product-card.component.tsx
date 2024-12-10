@@ -6,9 +6,14 @@ import { addItemToCart } from '../../store/cart/cart.action';
 import  { ProductCardContainer, Footer } from './product-card.styles';
 
 import Button, {BUTTON_TYPES_CLASSES} from '../button/button.component';
+import { CategoryItem } from '../../store/categories/category.types';
+import { FC } from 'react';
 
+type ProductCardProps = {
+    product: CategoryItem
+}
 
-const ProductCard = ({ product }) => {
+const ProductCard: FC<ProductCardProps> = ({ product }) => {
     
     const { name, price, imageUrl } = product;
     const dispatch = useDispatch();

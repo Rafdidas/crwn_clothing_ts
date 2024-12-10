@@ -15,6 +15,14 @@ export const LogoContainer = styled(Link)`
   padding: 25px;
 `;
 
+export const Navout = styled.span `
+  width: 50%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+`
+
 export const NavLinks = styled.div `
   width: 50%;
   height: 100%;

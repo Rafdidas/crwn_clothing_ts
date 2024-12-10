@@ -158,3 +158,68 @@ export const fetchCategoriesFailed = withMatcher((error: Error): FetchCategories
 ```
 ```
 
+## button.component.tsx
+- Button은 React.FC 타입을 사용하여 선언
+- FC는 "Function Component"의 약자로, TypeScript에서 React 컴포넌트를 작성할 때 사용
+  
+```
+const getButton = (buttonType = BUTTON_TYPES_CLASSES.base) => 
+    ({
+        [BUTTON_TYPES_CLASSES.base]: BaseButton,
+        [BUTTON_TYPES_CLASSES.google]: GoogleSignInbutton,
+        [BUTTON_TYPES_CLASSES.inverted]: InvertedButton,
+    }[buttonType] as typeof BaseButton);
+
+export type ButtonProps = {
+    buttonType?: BUTTON_TYPES_CLASSES;
+    isLoading?: boolean;
+} & ButtonHTMLAttributes<HTMLButtonElement>;
+
+const Button: FC<ButtonProps> = ({ children, buttonType, isLoading, ...otherProps }) => {
+    const CustomButton = getButton(buttonType);
+    return (
+        <CustomButton disabled={isLoading} {...otherProps}>
+            {isLoading ? <ButtonSpinner /> : children}
+        </CustomButton>
+    );
+}
+
+export default Button;
+```
+## form-input.component.tsx
+- InputHTMLAttributes<HTMLInputElement>를 상속받아 HTML <input>의 모든 속성을 지원
+- FormInputProps는 label 속성과 HTML <input> 요소에서 사용할 수 있는 속성들을 조합하여 정의된 타입
+- InputHTMLAttributes<HTMLInputElement>: HTML <input> 요소에서 사용할 수 있는 속성들을 포함합니다. 예를 들어, type, value, onChange 등을 사용
+- FC<FormInputProps>: FormInput 컴포넌트가 FormInputProps 타입의 props를 받는다는 것을 명시
+  
+```
+type FormInputProps = {
+  label: string;
+} & InputHTMLAttributes<HTMLInputElement>
+
+const FormInput: FC<FormInputProps> = ({ label, ...otherProps }) => {
+    return (
+      <Group>
+        <Input {...otherProps} />
+        {label && (
+          <FormInputLabel
+            shrink={Boolean(otherProps.value && typeof otherProps.value === 'string' &&  otherProps.value.length)}>
+            {label}
+          </FormInputLabel>
+        )}
+      </Group>
+    );
+}
+
+export default FormInput;
+```
+
+## custom.d.ts
+```
+declare module "*.svg" {
+    import React = require("react");
+    export const ReactComponent: React.FC<React.SVGProps<SVGSVGElement>>;
+    const src: string;
+    export default src;
+}
+```
