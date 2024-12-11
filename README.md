@@ -223,3 +223,24 @@ declare module "*.svg" {
     export default src;
 }
 ```
+
+## cart-dropdown.coponent.tsx
+- useCallback 함수 사용
+```
+const goToCheckoutHandler = useCallback(() => {
+  navigate('/checkout');
+}, []);
+```
+- navigate 함수는 React Router에서 페이지 이동을 처리하는 함수
+- goToCheckoutHandler는 의존성 배열이 빈 배열([])이므로, 컴포넌트가 렌더링될 때 한 번만 생성
+- useCallback을 사용하지 않으면, goToCheckoutHandler가 컴포넌트가 리렌더링될 때마다 새롭게 생성되어 버튼(Button) 컴포넌트가 불필요하게 리렌더링될 가능성이 있습니다.
+
+## useCallback이 필요한 이유
+- React 컴포넌트가 렌더링될 때마다 컴포넌트 내부에서 정의한 모든 함수가 새로 생성됩니다. 이는 불필요한 리렌더링을 유발하거나 성능 문제를 초래할 수 있습니다.
+- 예를 들어, 하위 컴포넌트가 props로 함수를 받을 때 이 함수가 새로 생성되면 하위 컴포넌트는 이 props가 변경된 것으로 간주하여 다시 렌더링됩니다. useCallback은 이를 방지하여 동일한 함수 참조를 유지
+
+## useCallback을 사용할 때와 사용하지 않을 때
+- 사용하지 않을 때: 함수가 새로 생성되어 하위 컴포넌트가 불필요하게 렌더링될 가능성이 있음.
+- 사용할 때: 함수가 메모이제이션되어 불필요한 렌더링을 방지. 특히, props로 함수를 전달하거나 비싼 연산이 포함된 콜백을 사용할 경우 성능 최적화에 효과적.
+
+- useCallback은 성능 최적화를 위해 함수 참조를 고정하고, React 앱의 렌더링 효율성을 높이는 데 유용합니다. 하지만 항상 사용하는 것이 아니라, 하위 컴포넌트에 props로 함수가 전달되는 경우나 복잡한 연산이 포함된 경우에만 사용하는 것이 좋습니다.
